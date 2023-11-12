@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/csv"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -11,6 +12,20 @@ import (
 )
 
 const CONN_STRING string = "postgresql://postgres:dockerpw123@localhost:5432/searchEngineTest?sslmode=disable"
+
+type gameEntry struct {
+	rank         int
+	name         string
+	platform     string
+	year         int
+	genre        string
+	publisher    string
+	na_sales     float32
+	eu_sales     float32
+	jp_sales     float32
+	other_sales  float32
+	global_sales float32
+}
 
 // readCsv reads in a fileName and returns the file in a [][]string format.
 func readCsv(fn string) [][]string {
@@ -32,6 +47,24 @@ func randInsert(myArr *[]int) {
 	*myArr = append(*myArr, rand.Intn(5))
 }
 
+func printTopGame(db *sql.DB) {
+
+	// var topGame gameEntry
+	var publisher string
+	query := `
+		SELECT "Publisher"
+		FROM products
+		LIMIT 1;
+	`
+	err := db.QueryRow(query).Scan(&publisher)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("The top game publisher is %v\n", publisher)
+}
+
 func main() {
 	// Test for opening csv files. It works.
 	readCsv("data/test.csv")
@@ -46,5 +79,7 @@ func main() {
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
+
+	printTopGame(db)
 
 }
