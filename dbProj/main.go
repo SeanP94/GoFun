@@ -1,12 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 
 	_ "github.com/lib/pq"
 )
-
-const CONN_STRING string = "postgresql://postgres:dockerpw123@localhost:5432/searchEngineTest?sslmode=disable"
 
 // type gameEntry struct {
 // 	rank         int
@@ -27,22 +27,9 @@ const CONN_STRING string = "postgresql://postgres:dockerpw123@localhost:5432/sea
 // 	*myArr = append(*myArr, rand.Intn(5))
 // }
 
-// func printTopGame(db *sql.DB) {
-// 	// var topGame gameEntry
-// 	var publisher string
-// 	query := `
-// 		SELECT "Publisher"
-// 		FROM products
-// 		LIMIT 1;
-// 	`
-// 	err := db.QueryRow(query).Scan(&publisher)
-
 // 	if err != nil {
 // 		log.Fatal(err)
 // 	}
-
-// 	fmt.Printf("The top game publisher is %v\n", publisher)
-// }
 
 // type TreeNode struct {
 // 	Right *TreeNode
@@ -52,6 +39,23 @@ const CONN_STRING string = "postgresql://postgres:dockerpw123@localhost:5432/sea
 // 	currDepth int
 // 	treeNode  *TreeNode
 // }
+
+const CONN_STRING string = "postgresql://postgres:dockerpw123@localhost:5432/searchEngineTest?sslmode=disable"
+
+func printTopGame(db *sql.DB) {
+	// var topGame gameEntry
+	var publisher string
+	query := `
+		SELECT "Publisher"
+		FROM products
+		LIMIT 1;
+	`
+	err := db.QueryRow(query).Scan(&publisher)
+	if err != nil {
+		log.Fatal("Failed to select publisher")
+	}
+	fmt.Printf("The top game publisher is %v\n", publisher)
+}
 
 func main() {
 	/*
@@ -83,10 +87,9 @@ func main() {
 	*/
 
 	// ^^Above code has been used for learning. Do not delete until progress is a bit more consistent. ^^ //
-	csvFile := readCsv("data/test.csv")
-	var testObject csvToSql
+	var personTable csvToSql
 
-	testObject.parseRows(csvFile)
-	createTableQuery := testObject.createTable("people", "name")
+	personTable.csvToSqlInit("data/test.csv")
+	createTableQuery := personTable.createTable("people", "name")
 	fmt.Println(createTableQuery)
 }

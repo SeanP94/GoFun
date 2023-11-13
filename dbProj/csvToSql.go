@@ -64,14 +64,18 @@ type csvToSql struct {
 	columns       []string
 }
 
+// csvToSqlInit will take in a filename of a csv file, adds values to all of csvToSql's variables.
+func (c *csvToSql) csvToSqlInit(sqlFn string) {
+	csvFile := readCsv(sqlFn)
+	c.rowData = csvFile[1:][:]
+	c.columns = csvFile[0][:]
+	c.columnTypeMap = map[string]string{}
+	c.parseRows()
+}
+
 // parseRows: takes in a [][]string rowData object. Creates the columnTypeMap for the csvToSql class.
 // utilizes regex to map either string, int, or float to each column.
-func (c *csvToSql) parseRows(csv [][]string) {
-	// Set our class variables (TODO, in future "constructor" move these lines.)
-	c.rowData = csv[1:][:]
-	c.columns = csv[0][:]
-	c.columnTypeMap = map[string]string{}
-
+func (c *csvToSql) parseRows() {
 	// Add items to the map
 	for _, column := range c.columns {
 		_, ok := c.columnTypeMap[column]
