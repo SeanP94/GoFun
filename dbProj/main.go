@@ -57,11 +57,14 @@ type DepthNode struct {
 }
 
 func main() {
+
 	var root *TreeNode
-	stack := []DepthNode{{1, root}}
-	stack = append(stack, DepthNode{2, root})
+	stack := []DepthNode{{1, root}, {3, root}}
+	stack = append(stack, DepthNode{2, &TreeNode{root}})
+
 	x := stack[len(stack)-1]
-	fmt.Printf("%T, %T", x.currDepth, x.treeNode)
+
+	fmt.Printf("%v, %T, %T", x.treeNode, x.currDepth, x.treeNode)
 	// Test for opening csv files. It works.
 	readCsv("data/test.csv")
 
