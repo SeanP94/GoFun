@@ -1,10 +1,11 @@
 package main
 
 import (
-	// "regexp"
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
+	"regexp"
 )
 
 /*
@@ -55,6 +56,49 @@ func readCsv(fn string) [][]string {
 	return records
 }
 
-// type csvToSql struct {
-// 	columnTypeMap  map[string]string // Used to store the strings of the column types
-// }
+type csvToSql struct {
+	columnTypeMap map[string]string // Used to store the strings of the column types
+	csvData       [][]string
+}
+
+// parseRows: takes in a [][]string csvData object. Creates the columnTypeMap for the csvToSql class.
+// utilizes regex to map either string, int, or float to each column.
+func (c csvToSql) parseRows(csv [][]string) {
+	c.csvData = csv
+	// Used to add to map, and used as a key map for determining datatype.
+	columns := csv[0][:]
+	c.columnTypeMap = map[string]string{}
+
+	// Add items to the map
+	for _, column := range columns {
+		_, ok := c.columnTypeMap[column]
+		if ok {
+			log.Fatalf("Duplicate column name %v found in columns. Please correctRows", column)
+		}
+		c.columnTypeMap[column] = "string"
+	}
+
+	intMatch := regexp.MustCompile(`^-*[1-9]+[0-9]*$`)
+	floatMatch := regexp.MustCompile(`^-*[1-9]+[0-9]*\\.[1-9]+[0-9]*$`)
+
+	for _, row := range c.csvData[1:][:] {
+		for i, valueStr := range row {
+			colKey := columns[i]
+			value := []byte(valueStr)
+
+			// Match the strings with regex to see if they fit a parameter
+			foundInt := intMatch.Match([]byte(value))
+			foundFloat := floatMatch.Match(value)
+
+			if foundInt && c.columnTypeMap[colKey] == "string" {
+				c.columnTypeMap[colKey] = "int"
+			} else if foundFloat {
+				c.columnTypeMap[colKey] = "float"
+			}
+
+			// TODO: Dates later
+			// Date and Datetime? Research postgres first
+		}
+	}
+	fmt.Println(c.columnTypeMap)
+}
