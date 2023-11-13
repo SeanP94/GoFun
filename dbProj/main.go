@@ -42,19 +42,41 @@ import (
 
 const CONN_STRING string = "postgresql://postgres:dockerpw123@localhost:5432/searchEngineTest?sslmode=disable"
 
-func printTopGame(db *sql.DB) {
-	// var topGame gameEntry
-	var publisher string
-	query := `
-		SELECT "Publisher"
-		FROM products
-		LIMIT 1;
-	`
-	err := db.QueryRow(query).Scan(&publisher)
+// func printTopGame(db *sql.DB) {
+// 	// var topGame gameEntry
+// 	var publisher string
+// 	query := `
+// 		SELECT "Publisher"
+// 		FROM products
+// 		LIMIT 1;
+// 	`
+// 	err := db.QueryRow(query).Scan(&publisher)
+// 	if err != nil {
+// 		log.Fatal("Failed to select publisher")
+// 	}
+// 	fmt.Printf("The top game publisher is %v\n", publisher)
+// }
+
+func createTable(db *sql.DB, query string) {
+	_, err := db.Exec(query)
 	if err != nil {
-		log.Fatal("Failed to select publisher")
+		log.Fatal(err)
 	}
-	fmt.Printf("The top game publisher is %v\n", publisher)
+	fmt.Println("Table created successfully.")
+}
+
+func insertData(db *sql.DB, rows [][]string, query string) {
+	fmt.Println(query)
+	fmt.Println(rows)
+	for _, row := range rows {
+		fmt.Printf("%T, %T", row[0], row[1])
+
+		err := db.QueryRow(query, row[0], row[1])
+		if err != nil {
+			fmt.Println()
+			log.Fatal(err)
+		}
+	}
 }
 
 func main() {
@@ -68,16 +90,6 @@ func main() {
 		fmt.Printf("%v, %T, %T\n", x.treeNode, x.currDepth, x.treeNode)
 		// Test for opening csv files. It works.
 
-		db, err := sql.Open("postgres", CONN_STRING)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		defer db.Close()
-		// Check if DB is connected properly.
-		if err = db.Ping(); err != nil {
-			log.Fatal(err)
-		}
 
 		// printTopGame(db)
 		fmt.Println(math.Max(1, 2))
@@ -87,9 +99,36 @@ func main() {
 	*/
 
 	// ^^Above code has been used for learning. Do not delete until progress is a bit more consistent. ^^ //
+	// Connect to db.
+	db, err := sql.Open("postgres", CONN_STRING)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+	// Check if DB is connected properly.
+	if err = db.Ping(); err != nil {
+		log.Fatal(err)
+	}
+
 	var personTable csvToSql
 
-	personTable.csvToSqlInit("data/test.csv")
-	createTableQuery := personTable.createTable("people", "name")
+	personTable.csvToSqlInit("data/simpleTest.csv", "people_simple")
+	createTableQuery := personTable.createTable("name")
 	fmt.Println(createTableQuery)
+	createTable(db, createTableQuery)
+
+	//TODO:
+	insertData(db, personTable.rowData, personTable.insertQuery())
+	var test string
+	query := `
+		SELECT name
+		FROM products;
+	`
+	err = db.QueryRow(query).Scan(&test)
+
+	if err != nil {
+		log.Fatal("Failed to select person")
+	}
+
 }
