@@ -7,7 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
-
+	"math"
 	_ "github.com/lib/pq"
 )
 
@@ -65,7 +65,22 @@ func printTopGame(db *sql.DB) {
 	fmt.Printf("The top game publisher is %v\n", publisher)
 }
 
+type TreeNode struct {
+	Right *TreeNode
+	value int
+}
+
+type DepthNode struct {
+    currDepth int
+    treeNode *TreeNode
+}
+
+
 func main() {
+	var root *TreeNode
+	stack := []DepthNode{DepthNode{1, root}}
+	x,y := stack[len(stack)-1]
+	fmt.Printf("%T, %T", x,y )
 	// Test for opening csv files. It works.
 	readCsv("data/test.csv")
 
@@ -80,6 +95,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	printTopGame(db)
-
+	// printTopGame(db)
+	fmt.Println(math.Max(1,2))
+	
 }
