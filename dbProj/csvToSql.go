@@ -1,5 +1,12 @@
 package main
 
+import (
+	// "regexp"
+	"encoding/csv"
+	"log"
+	"os"
+)
+
 /*
 PROJECT TODO:
 	Build a csv -> SQL parser.
@@ -33,5 +40,21 @@ PROJECT TODO:
 			Maybe have some simple query globals ready to test??
 */
 
-type csvToSql struct {
+// Helper Functions //
+func readCsv(fn string) [][]string {
+	f, err := os.Open(fn)
+	if err != nil {
+		log.Fatal("You gave me the wrong file idiot: \n\t- ", err)
+	}
+	defer f.Close() // Make sure you close the file.
+	csvReader := csv.NewReader(f)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal("Idk why but its not working. \n\t- ", err)
+	}
+	return records
 }
+
+// type csvToSql struct {
+// 	columnTypeMap  map[string]string // Used to store the strings of the column types
+// }
