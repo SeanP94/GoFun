@@ -66,7 +66,7 @@ type csvToSql struct {
 
 // parseRows: takes in a [][]string rowData object. Creates the columnTypeMap for the csvToSql class.
 // utilizes regex to map either string, int, or float to each column.
-func (c csvToSql) parseRows(csv [][]string) {
+func (c *csvToSql) parseRows(csv [][]string) {
 	// Set our class variables (TODO, in future "constructor" move these lines.)
 	c.rowData = csv[1:][:]
 	c.columns = csv[0][:]
@@ -106,16 +106,19 @@ func (c csvToSql) parseRows(csv [][]string) {
 	fmt.Println(c.columnTypeMap)
 }
 
-func (c csvToSql) createTable(tableName string, primaryKey string) string {
-	pk := slices.Contains(c.rowData[0][:], primaryKey)
+func (c *csvToSql) createTable(tableName string, primaryKey string) string {
+	println(c.columns)
+	pk := slices.Contains(c.columns, primaryKey)
 	if !pk {
 		log.Fatalf("%v cannot be a primary key, as it is not a column.", primaryKey)
 	}
-	statement := []string{"CREATE TABLE [IF NOT EXISTS]" + tableName + "("}
-
-	// for i, column := range c.columns {
-
-	// }
-
-	return strings.Join(statement, "\n")
+	statement := []string{"CREATE TABLE IF NOT EXISTS " + tableName + " ("}
+	for _, column := range c.columns {
+		line := fmt.Sprintf("\t%v %v", column, c.columnTypeMap[column])
+		if primaryKey == column {
+			line += " PRIMARY KEY"
+		}
+		statement = append(statement, line+",")
+	}
+	return strings.Join(statement, "\n") + "\n);"
 }

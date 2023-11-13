@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	_ "github.com/lib/pq"
 )
 
@@ -85,5 +87,6 @@ func main() {
 	var testObject csvToSql
 
 	testObject.parseRows(csvFile)
-
+	createTableQuery := testObject.createTable("people", "name")
+	fmt.Println(createTableQuery)
 }
