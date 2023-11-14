@@ -119,7 +119,7 @@ func (c *csvToSql) createTable(primaryKey string) string {
 	if !pk {
 		log.Fatalf("%v cannot be a primary key, as it is not a column.", primaryKey)
 	}
-	statement := []string{"CREATE TABLE IF NOT EXISTS " + c.tableName + " ("}
+	statement := []string{"DROP TABLE IF EXISTS " + c.tableName + ";\n\n CREATE TABLE IF NOT EXISTS " + c.tableName + " ("}
 	for _, column := range c.columns {
 		line := fmt.Sprintf("\t%v %v", column, c.columnTypeMap[column])
 		if primaryKey == column {
