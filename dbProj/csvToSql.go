@@ -60,10 +60,11 @@ func readCsv(fn string) [][]string {
 }
 
 type csvToSql struct {
-	columnTypeMap map[string]string // Used to store the strings of the column types
-	rowData       [][]string
-	columns       []string
-	tableName     string
+	columnTypeMap   map[string]string // Used to store the strings of the column types
+	rowData         [][]string
+	columns         []string
+	tableName       string
+	insertStatement string
 }
 
 // csvToSqlInit will take in a filename of a csv file, adds values to all of csvToSql's variables.
@@ -74,6 +75,7 @@ func (c *csvToSql) csvToSqlInit(sqlFn string, tableName string) {
 	c.columnTypeMap = map[string]string{}
 	c.parseRows()
 	c.tableName = tableName
+	c.insertStatement = c.insertQueryStatement()
 }
 
 // parseRows: takes in a [][]string rowData object. Creates the columnTypeMap for the csvToSql class.
@@ -103,14 +105,13 @@ func (c *csvToSql) parseRows() {
 			if foundInt && c.columnTypeMap[colKey] == "TEXT" {
 				c.columnTypeMap[colKey] = "INT"
 			} else if foundFloat {
-				c.columnTypeMap[colKey] = "NUMERIC(5, 2)"
+				c.columnTypeMap[colKey] = "FLOAT4"
 			}
 
 			// TODO: Dates later
 			// Date and Datetime? Research postgres first
 		}
 	}
-	fmt.Println(c.columnTypeMap)
 }
 
 // createTable will generate a create table  template call for the csv data.
@@ -132,8 +133,8 @@ func (c *csvToSql) createTable(primaryKey string) string {
 	return strings.Join(statement, "\n") + "\n);"
 }
 
-// insertQuery will create a template for
-func (c csvToSql) insertQuery() string {
+// insertQuery will create a template for an insertQuery.
+func (c csvToSql) insertQueryStatement() string {
 	statement := []string{fmt.Sprintf("INSERT INTO %v (", c.tableName)}
 	vals := []string{}
 	for i, col := range c.columns {
@@ -146,5 +147,4 @@ func (c csvToSql) insertQuery() string {
 	statement[len(statement)-1] = strings.TrimRight(statement[len(statement)-1], ",")
 	vals[len(vals)-1] = strings.TrimRight(vals[len(vals)-1], ",")
 	return strings.Join(statement, "") + ")\nVALUES (" + strings.Join(vals, "") + ");"
-
 }

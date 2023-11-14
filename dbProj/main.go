@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -24,22 +25,14 @@ import (
 
 const CONN_STRING string = "postgresql://postgres:dockerpw123@localhost:5432/searchEngineTest?sslmode=disable"
 
+// twoPointFloat Converts what was as string into a guaranteed .2f
+
 func createTable(db *sql.DB, query string) {
 	_, err := db.Exec(query)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Table created successfully.")
-}
-
-func insertData(db *sql.DB, rows [][]string, query string) {
-	for _, row := range rows {
-		_, err := db.Exec(query, row[0], row[1])
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 }
 
 func main() {
@@ -58,14 +51,29 @@ func main() {
 
 	var personTable csvToSql
 
-	personTable.csvToSqlInit("data/simpleTest.csv", "people_simple")
+	personTable.csvToSqlInit("data/test.csv", "people")
 	createTableQuery := personTable.createTable("name")
 	fmt.Println(createTableQuery)
 	createTable(db, createTableQuery)
 
-	//TODO:
-	insertData(db, personTable.rowData, personTable.insertQuery())
+	for _, row := range personTable.rowData {
+		age, err := strconv.Atoi(row[1])
+		if err != nil {
+			log.Fatal(err)
+		}
+		networth, err := strconv.ParseFloat(row[3], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(networth)
+		_, err = db.Exec(personTable.insertStatement, row[0], age, row[2], networth)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	var test string
+
 	query := `
 		SELECT name
 		FROM people_simple
